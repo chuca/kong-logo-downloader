@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kong Logo Downloader</title>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300;400;700;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000F06;
+    --surface: #0A1A0E;
+    --surface-2: #0F1F12;
+    --border: #1B3020;
+    --border-hover: #2C4A2E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #858983;
+    --accent: #CCFF00;
+    --logo-fill: #CCFF00;
+    --preview-bg: #001408;
+  }
+  body.electric {
+    --bg: #b8e600;
+    --surface: #CCFF00;
+    --surface-2: #d4ff1a;
+    --border: #a8d400;
+    --border-hover: #8ab000;
+    --text-primary: #001408;
+    --text-secondary: #2D4A1E;
+    --accent: #001408;
+    --logo-fill: #001408;
+    --preview-bg: #CCFF00;
+  }
+  body.bay {
+    --bg: #C4CAC2;
+    --surface: #D8DDD6;
+    --surface-2: #CDD3CB;
+    --border: #B0B6AE;
+    --border-hover: #8C918A;
+    --text-primary: #101110;
+    --text-secondary: #4A4D49;
+    --accent: #001408;
+    --logo-fill: #001408;
+    --preview-bg: #A1A69F;
+  }
+  body.bw {
+    --bg: #F0F0F0;
+    --surface: #FFFFFF;
+    --surface-2: #F5F5F5;
+    --border: #DEDEDE;
+    --border-hover: #BCBCBC;
+    --text-primary: #101110;
+    --text-secondary: #676B66;
+    --accent: #001408;
+    --logo-fill: #001408;
+    --preview-bg: #FFFFFF;
+  }
+
+  body {
+    font-family: 'Funnel Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .app {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 32px 64px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .hd-sep { width: 1px; height: 18px; background: var(--border); }
+  .hd-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+
+  /* Theme toggle */
+  .theme-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+    user-select: none;
+    transition: border-color 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--border-hover); }
+  .t-opt {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 999px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .t-opt.active { background: var(--accent); color: var(--bg); }
+
+  /* Layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* Logo grid — flush, no gap, collapsed borders */
+  .logo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .logo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-right: -1px;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 0;
+  }
+  .logo-card:hover { border-color: var(--border-hover); z-index: 1; }
+  .logo-card.selected {
+    border-color: var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    z-index: 2;
+  }
+
+  /* Preview area — square, no padding, logo centered */
+  .preview-area {
+    background: var(--preview-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    aspect-ratio: 1 / 1;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s;
+  }
+  .preview-area svg { max-width: 100%; height: auto; display: block; }
+  .preview-area svg .lp { fill: var(--logo-fill); transition: fill 0.25s; }
+
+  .card-footer {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .variant-label { font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-secondary); }
+  .check-dot {
+    width: 17px; height: 17px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-card.selected .check-dot { display: flex; }
+  .check-dot svg { width: 9px; height: 9px; }
+
+  /* Panel */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: sticky;
+    top: 28px;
+  }
+
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; }
+  .size-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .inp-group { display: flex; flex-direction: column; gap: 5px; }
+  .inp-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+  .px-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 7px 10px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  .px-input::-webkit-outer-spin-button, .px-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .px-input:focus { border-color: var(--accent); }
+
+  .lock-hint { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-secondary); margin-top: 6px; }
+  .lock-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+  /* BG toggle */
+  .bg-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+    user-select: none;
+  }
+  .bg-opt {
+    flex: 1;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 0;
+    text-align: center;
+    border-radius: 999px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .bg-opt.active { background: var(--accent); color: var(--bg); }
+  .bg-note { font-size: 10px; color: var(--text-secondary); margin-top: 7px; min-height: 14px; font-family: 'Roboto Mono', monospace; }
+
+  /* Download buttons */
+  .dl-list { display: flex; flex-direction: column; gap: 7px; }
+  .dl-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 9px 15px;
+    cursor: pointer;
+    font-family: 'Funnel Sans', system-ui, sans-serif;
+    font-size: 12px; font-weight: 700;
+    color: var(--text-primary);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .dl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .dl-btn:hover .dl-meta { color: var(--accent); }
+  .dl-btn:hover .dl-fmt { color: var(--accent); }
+  .dl-right { display: flex; align-items: center; gap: 6px; }
+  .dl-fmt { font-family: 'Roboto Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent); transition: color 0.2s; }
+  .dl-meta { font-family: 'Roboto Mono', monospace; font-size: 10px; color: var(--text-secondary); transition: color 0.2s; }
+  .dl-icon { width: 13px; height: 13px; color: var(--accent); }
+
+  .info-block { border-top: 1px solid var(--border); padding-top: 16px; }
+  .info-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+  .info-dims { font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--text-secondary); }
+
+  canvas#offscreen { display: none; }
+
+  @media (max-width: 760px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .panel { position: static; }
+    .logo-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<canvas id="offscreen"></canvas>
+<div class="app">
+
+  <header class="header">
+    <div class="header-left">
+      <svg width="54" height="20" viewBox="0 0 250 94" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M44.6984 0.199951H63.5984L36.3984 34.8L64.6984 73.8999H44.5984L22.9984 43.1999H17.8984V73.8999H0.898438V0.199951H17.8984V28.7999H22.9984L44.5984 0.199951H44.6984Z" fill="var(--accent)"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M85.4016 61.0001H106.302V28.8001H85.4016V61.0001ZM86.1016 73.9001C80.3016 73.9001 77.3016 72.9001 74.8016 70.3001C71.1016 66.5001 69.6016 61.3001 69.6016 45.0001C69.6016 28.7001 71.1016 23.5001 74.8016 19.6001C77.2016 17.1001 80.3016 16.1001 86.1016 16.1001H105.502C111.302 16.1001 114.302 17.1001 116.802 19.6001C120.502 23.5001 122.002 28.6001 122.002 45.0001C122.002 61.4001 120.502 66.5001 116.802 70.3001C114.302 72.9001 111.302 73.9001 105.502 73.9001H86.1016Z" fill="var(--accent)"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M169.298 34.3001V73.9001H185.198V33.1001C185.198 24.6001 184.298 21.6001 181.898 19.3001C179.698 17.1001 176.598 16.1001 171.698 16.1001H157.698L149.698 23.4001V16.1001H133.898V73.9001H149.798V28.8001H169.298V34.4001V34.3001Z" fill="var(--accent)"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M234.001 16.1001V23.4001L226.001 16.1001H214.101C208.401 16.1001 205.001 17.1001 202.401 19.6001C199.001 23.2001 197.301 30.9001 197.301 45.2001C197.301 59.5001 198.701 66.9001 202.001 70.3001C204.601 72.8001 207.701 73.9001 213.801 73.9001H234.001V82.2001H206.001V85.6001L213.301 93.7001H235.201C241.001 93.7001 244.301 92.7001 246.401 90.5001C249.001 87.8001 250.001 86.1001 250.001 76.2001V16.2001H234.001V16.1001ZM234.101 61.0001H213.201V28.8001H234.101V61.0001Z" fill="var(--accent)"/>
+      </svg>
+      <div class="hd-sep"></div>
+      <span class="hd-label">Logo Downloader</span>
+    </div>
+    <div class="theme-toggle" id="themeToggle">
+      <span class="t-opt active" data-t="dark">Dark</span>
+      <span class="t-opt" data-t="electric">Electric</span>
+      <span class="t-opt" data-t="bay">Bay</span>
+      <span class="t-opt" data-t="bw">B/W</span>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <div class="logo-grid" id="cardGrid">
+
+      <!-- 1: Symbol + Logotype (429×137) -->
+      <div class="logo-card selected" data-variant="symbol_logotype" data-ratio="3.1314">
+        <div class="preview-area">
+          <svg viewBox="0 0 576.4 284.4" width="240" xmlns="http://www.w3.org/2000/svg">
+
+            <g transform="translate(73.7,73.7)">
+            <path class="lp" d="M49.6,113l-3.7,4.7,8.4,13.2-.9,6.1h35.6l2.5-6.1-14.3-17.9h-27.6Z"/>
+            <path class="lp" d="M69.1,32.7l-12.9,22.7,62.9,74.8-1.8,6.9h28.8l5.2-24.3L84.1,32.7h-15Z"/>
+            <path class="lp" d="M77.7,15.6l-6.1,11.3h15.2l26.1,31.2,15.5-12.8v-8.1l-5.4-7.6,4-4.2L95.8.7l-18.2,14.9Z"/>
+            <path class="lp" d="M30.9,78.8h-8.5L0,107.4v29.6h24l4.2-5.5,18.5-24.1h26.8l8.2-12.7-29.1-34.7-21.9,18.9Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M260.4,94h20.9v-32.2h-20.9v32.2ZM261.1,106.9c-5.8,0-8.8-1-11.3-3.6-3.7-3.8-5.2-9-5.2-25.3s1.5-21.5,5.2-25.4c2.4-2.5,5.5-3.5,11.3-3.5h19.4c5.8,0,8.8,1,11.3,3.5,3.7,3.9,5.2,9,5.2,25.4s-1.5,21.5-5.2,25.3c-2.5,2.6-5.5,3.6-11.3,3.6h-19.4Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M344.3,67.3v39.6h15.9v-40.8c0-8.5-.9-11.5-3.3-13.8-2.2-2.2-5.3-3.2-10.2-3.2h-14s-8,7.3-8,7.3v-7.3h-15.8v57.8h15.9v-45.1h19.5v5.6h0Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M219.7,33.2h18.9l-27.2,34.6,28.3,39.1h-20.1l-21.6-30.7h-5.1s0,30.7,0,30.7h-17V33.2h17v28.6h5.1l21.6-28.6Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M409,49.1v7.3l-8-7.3h-11.9c-5.7,0-9.1,1-11.7,3.5-3.4,3.6-5.1,11.3-5.1,25.6s1.4,21.7,4.7,25.1c2.6,2.5,5.7,3.6,11.8,3.6h20.2v8.3s-28,0-28,0v3.4s7.3,8.1,7.3,8.1h21.9c5.8,0,9.1-1,11.2-3.2,2.6-2.7,3.6-4.4,3.6-14.3v-60h-16,0ZM409.1,94h-20.9v-32.2h20.9v32.2h0Z"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-footer">
+          <span class="variant-label">Symbol + Logotype</span>
+          <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 2: Symbol + Logotype + Tagline (426×211) -->
+      <div class="logo-card" data-variant="symbol_logotype_tagline" data-ratio="2.0189">
+        <div class="preview-area">
+          <svg viewBox="0 0 573.4 358.4" width="200" xmlns="http://www.w3.org/2000/svg">
+
+            <g transform="translate(73.7,73.7)">
+            <path class="lp" d="M49.7475 112.02L46.0388 116.746L54.4295 129.912L53.5547 136H89.1503L91.6145 129.912L77.2974 112.02H49.7475Z"/>
+            <path class="lp" d="M69.2148 31.8996L56.3393 54.5312L119.14 129.157L117.353 136H146.16L151.372 111.723L84.1726 31.8872L69.2148 31.8996Z"/>
+            <path class="lp" d="M77.7656 14.8856L71.642 26.2076H86.8339L112.905 57.3648L128.405 44.5827V36.4655L123.021 28.868L127.001 24.7104L95.9022 0L77.7656 14.8856Z"/>
+            <path class="lp" d="M31.0195 77.9547H22.5302L0.16748 106.464V136H24.1566L28.3951 130.469L46.9013 106.402H73.675L81.9178 93.7189L52.8894 59.1218L31.0195 77.9547Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M260.304 93.1159H281.19V60.9496H260.304V93.1159ZM261.035 105.982C255.222 105.982 252.202 105.033 249.714 102.425C245.976 98.653 244.526 93.4101 244.526 77.1598C244.526 60.9095 245.976 55.6666 249.714 51.7879C252.109 49.2735 255.222 48.3239 261.035 48.3239H280.458C286.271 48.3239 289.291 49.2735 291.779 51.7879C295.517 55.6666 296.967 60.8025 296.967 77.1598C296.967 93.5171 295.517 98.653 291.779 102.425C289.291 105.046 286.271 105.982 280.458 105.982H261.035Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M344.198 66.4973V105.966H360.082V65.2267C360.082 56.7739 359.151 53.7378 356.756 51.4373C354.575 49.2439 351.448 48.2542 346.566 48.2542L332.598 48.2943L324.589 55.5568V48.2943H308.758V105.953H324.642V60.92H344.172V66.4706L344.198 66.4973Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M219.673 32.4329H238.59L211.425 66.9932L239.734 105.967H219.673L198.135 75.3524L193.027 75.3257V105.967H175.999V32.4329H193.027V60.9345H198.135L219.673 32.4329Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M408.851 48.3109V55.5734L400.842 48.3109L388.923 48.2708C383.216 48.2708 379.863 49.2605 377.269 51.7616C373.837 55.3059 372.174 63.0632 372.174 77.2672C372.174 91.4712 373.531 98.9076 376.843 102.358C379.437 104.859 382.524 105.969 388.657 105.969H408.811L408.838 114.222L380.861 114.275L380.887 117.659L388.111 125.711H409.982C415.795 125.711 419.121 124.667 421.196 122.474C423.79 119.759 424.828 118.074 424.828 108.163V48.3243H408.838L408.851 48.3109ZM408.957 93.0494H388.071V60.9366H408.944V93.0494H408.957Z"/>
+            <path class="lp" d="M60.9805 203.985L69.2105 182.625H73.3005L81.4205 203.985H77.3305L75.3505 198.395H67.0405L64.9305 203.985H60.9805ZM68.2305 195.025H74.2205L71.3505 186.985H71.2405L68.2305 195.025Z"/>
+            <path class="lp" d="M84.25 203.985V182.625H88.15V203.985H84.25Z"/>
+            <path class="lp" d="M109.87 204.355C107.92 204.355 106.2 203.895 104.7 202.985C103.22 202.055 102.07 200.765 101.25 199.105C100.42 197.455 100.01 195.525 100.01 193.335C100.01 191.145 100.42 189.235 101.25 187.585C102.08 185.915 103.23 184.625 104.7 183.715C106.19 182.785 107.92 182.315 109.87 182.315C111.45 182.315 112.87 182.615 114.11 183.215C115.36 183.815 116.39 184.665 117.19 185.775C118 186.885 118.5 188.175 118.69 189.645H114.63C114.45 188.515 113.94 187.605 113.07 186.905C112.21 186.205 111.14 185.855 109.85 185.855C108.65 185.855 107.61 186.175 106.71 186.805C105.81 187.415 105.12 188.295 104.63 189.415C104.16 190.525 103.92 191.835 103.92 193.345C103.92 194.855 104.16 196.175 104.63 197.295C105.12 198.415 105.82 199.285 106.71 199.905C107.61 200.525 108.65 200.825 109.85 200.825C111.13 200.825 112.21 200.485 113.07 199.795C113.93 199.095 114.45 198.165 114.63 197.025H118.69C118.5 198.505 118 199.795 117.19 200.905C116.38 202.015 115.35 202.865 114.11 203.465C112.86 204.065 111.45 204.365 109.87 204.365V204.355Z"/>
+            <path class="lp" d="M128.401 204.305C126.921 204.305 125.611 203.975 124.451 203.305C123.291 202.615 122.371 201.665 121.681 200.435C121.011 199.205 120.681 197.755 120.681 196.085C120.681 194.415 121.011 192.935 121.681 191.705C122.371 190.475 123.291 189.525 124.451 188.855C125.611 188.185 126.931 187.855 128.401 187.855C129.871 187.855 131.251 188.185 132.411 188.855C133.571 189.525 134.481 190.475 135.131 191.705C135.801 192.935 136.131 194.395 136.131 196.085C136.131 197.775 135.801 199.215 135.131 200.465C134.461 201.695 133.551 202.645 132.391 203.315C131.231 203.985 129.901 204.315 128.411 204.315L128.401 204.305ZM128.401 200.875C129.581 200.875 130.521 200.445 131.221 199.585C131.941 198.705 132.301 197.535 132.301 196.075C132.301 194.615 131.941 193.435 131.221 192.565C130.521 191.705 129.581 191.275 128.401 191.275C127.221 191.275 126.321 191.705 125.581 192.565C124.861 193.425 124.501 194.595 124.501 196.075C124.501 197.555 124.861 198.705 125.581 199.585C126.321 200.445 127.261 200.875 128.401 200.875Z"/>
+            <path class="lp" d="M139.471 203.985V188.165H143.191V190.565H143.301C143.761 189.705 144.391 189.045 145.201 188.585C146.031 188.115 146.981 187.875 148.051 187.875C149.211 187.875 150.221 188.155 151.081 188.715C151.961 189.275 152.641 190.055 153.141 191.035C153.631 192.015 153.881 193.155 153.881 194.435V203.975H150.061V195.165C150.061 193.965 149.761 193.035 149.161 192.375C148.561 191.685 147.741 191.345 146.681 191.345C145.621 191.345 144.821 191.685 144.201 192.375C143.601 193.045 143.301 193.975 143.301 195.165V203.975H139.481L139.471 203.985Z"/>
+            <path class="lp" d="M157.971 203.985V188.165H161.691V190.565H161.801C162.261 189.705 162.891 189.045 163.701 188.585C164.531 188.115 165.481 187.875 166.551 187.875C167.711 187.875 168.721 188.155 169.581 188.715C170.461 189.275 171.141 190.055 171.641 191.035C172.131 192.015 172.381 193.155 172.381 194.435V203.975H168.561V195.165C168.561 193.965 168.261 193.035 167.661 192.375C167.061 191.685 166.241 191.345 165.181 191.345C164.121 191.345 163.321 191.685 162.701 192.375C162.101 193.045 161.801 193.975 161.801 195.165V203.975H157.981L157.971 203.985Z"/>
+            <path class="lp" d="M183.26 204.305C181.78 204.305 180.47 203.975 179.31 203.305C178.17 202.615 177.26 201.665 176.6 200.435C175.95 199.185 175.62 197.715 175.62 196.035C175.62 194.355 175.94 192.925 176.57 191.715C177.22 190.485 178.11 189.535 179.23 188.865C180.36 188.195 181.65 187.865 183.1 187.865C184.47 187.865 185.69 188.175 186.77 188.785C187.84 189.385 188.69 190.265 189.33 191.425C189.97 192.585 190.28 193.985 190.28 195.615V197.015H179.36C179.5 198.315 179.91 199.335 180.6 200.075C181.3 200.795 182.18 201.155 183.24 201.155C184.05 201.155 184.72 200.965 185.24 200.575C185.78 200.185 186.15 199.665 186.35 198.995H190.25C190.04 200.105 189.6 201.055 188.93 201.865C188.28 202.655 187.46 203.265 186.48 203.685C185.51 204.105 184.44 204.315 183.26 204.315V204.305ZM179.46 194.335H186.53C186.41 193.245 186.03 192.425 185.4 191.855C184.79 191.275 184.02 190.985 183.11 190.985C182.2 190.985 181.41 191.275 180.76 191.855C180.13 192.435 179.7 193.265 179.47 194.335H179.46Z"/>
+            <path class="lp" d="M200.38 204.305C198.92 204.305 197.61 203.975 196.45 203.305C195.31 202.615 194.4 201.665 193.73 200.435C193.08 199.205 192.76 197.755 192.76 196.085C192.76 194.415 193.08 192.935 193.73 191.705C194.4 190.475 195.3 189.525 196.45 188.855C197.61 188.185 198.92 187.855 200.38 187.855C201.58 187.855 202.67 188.085 203.65 188.545C204.63 188.985 205.46 189.635 206.13 190.495C206.8 191.335 207.24 192.405 207.45 193.685H203.5C203.29 192.875 202.9 192.275 202.34 191.895C201.8 191.495 201.14 191.285 200.39 191.285C199.27 191.285 198.35 191.715 197.65 192.575C196.95 193.435 196.59 194.605 196.59 196.085C196.59 197.565 196.94 198.715 197.65 199.595C198.35 200.455 199.27 200.885 200.39 200.885C201.2 200.885 201.89 200.675 202.47 200.255C203.05 199.835 203.45 199.165 203.66 198.255H207.51C207.32 199.595 206.89 200.705 206.22 201.605C205.55 202.505 204.72 203.175 203.71 203.635C202.71 204.095 201.6 204.315 200.39 204.315L200.38 204.305Z"/>
+            <path class="lp" d="M214.22 203.985C213.22 203.985 212.43 203.725 211.87 203.195C211.31 202.665 211.03 201.865 211.03 200.795V191.225H208.5V188.165H211.06V183.415H214.8V188.165H218.2V191.225H214.85V200.925H218.54V203.985H214.22Z"/>
+            <path class="lp" d="M221.37 203.985V188.165H225.19V203.985H221.37ZM223.26 186.425C222.64 186.425 222.12 186.215 221.68 185.795C221.26 185.355 221.05 184.825 221.05 184.215C221.05 183.605 221.26 183.085 221.68 182.655C222.12 182.215 222.65 181.995 223.26 181.995C223.87 181.995 224.39 182.215 224.82 182.655C225.26 183.075 225.48 183.595 225.48 184.215C225.48 184.835 225.26 185.355 224.82 185.795C224.4 186.215 223.88 186.425 223.26 186.425Z"/>
+            <path class="lp" d="M233.63 203.985L227.49 188.165H231.44L235.63 199.555H235.73L239.87 188.165H243.75L237.61 203.985H233.63Z"/>
+            <path class="lp" d="M246.081 203.985V188.165H249.901V203.985H246.081ZM247.981 186.425C247.361 186.425 246.841 186.215 246.401 185.795C245.981 185.355 245.771 184.825 245.771 184.215C245.771 183.605 245.981 183.085 246.401 182.655C246.841 182.215 247.371 181.995 247.981 181.995C248.591 181.995 249.111 182.215 249.541 182.655C249.981 183.075 250.201 183.595 250.201 184.215C250.201 184.835 249.981 185.355 249.541 185.795C249.121 186.215 248.601 186.425 247.981 186.425Z"/>
+            <path class="lp" d="M258.241 203.985C257.241 203.985 256.461 203.725 255.891 203.195C255.331 202.665 255.051 201.865 255.051 200.795V191.225H252.521V188.165H255.081V183.415H258.821V188.165H262.221V191.225H258.871V200.925H262.561V203.985H258.241Z"/>
+            <path class="lp" d="M264.76 210.315V207.255H268.22L269.41 204.035L262.87 188.165H266.82L271.33 199.375H271.43L275.25 188.165H279.13L272.01 207.225C271.62 208.245 271.17 209.005 270.66 209.515C270.15 210.045 269.37 210.305 268.31 210.305H264.75L264.76 210.315Z"/>
+            <path class="lp" d="M10.42 203.985H6.52V186.105H0V182.625H16.93V186.105H10.42V203.985Z"/>
+            <path class="lp" d="M19.6802 203.985V181.835H23.5002V190.375H23.6102C24.0802 189.585 24.7202 188.965 25.5102 188.525C26.3002 188.085 27.2202 187.865 28.2802 187.865C29.4202 187.865 30.4202 188.145 31.2902 188.705C32.1702 189.245 32.8502 190.015 33.3502 190.995C33.8402 191.975 34.0902 193.125 34.0902 194.425V203.965H30.2702V195.105C30.2702 193.915 29.9702 192.975 29.3702 192.315C28.7702 191.655 27.9502 191.315 26.8902 191.315C25.8302 191.315 25.0302 191.645 24.4102 192.315C23.8102 192.985 23.5102 193.915 23.5102 195.105V203.965H19.6902L19.6802 203.985Z"/>
+            <path class="lp" d="M44.9601 204.305C43.4801 204.305 42.1701 203.975 41.0101 203.305C39.8701 202.615 38.9601 201.665 38.2901 200.435C37.6401 199.185 37.3101 197.715 37.3101 196.035C37.3101 194.355 37.6301 192.925 38.2601 191.715C38.9101 190.485 39.8001 189.535 40.9201 188.865C42.0401 188.195 43.3401 187.865 44.8001 187.865C46.1701 187.865 47.3901 188.175 48.4601 188.785C49.5301 189.385 50.3801 190.265 51.0201 191.425C51.6501 192.585 51.9701 193.985 51.9701 195.615V197.015H41.0501C41.1901 198.315 41.6001 199.335 42.2901 200.075C42.9901 200.795 43.8701 201.155 44.9301 201.155C45.7401 201.155 46.4101 200.965 46.9301 200.575C47.4701 200.185 47.8401 199.665 48.0401 198.995H51.9401C51.7301 200.105 51.2901 201.055 50.6201 201.865C49.9701 202.655 49.1501 203.265 48.1701 203.685C47.2001 204.105 46.1301 204.315 44.9501 204.315L44.9601 204.305ZM41.1601 194.335H48.2301C48.1101 193.245 47.7301 192.425 47.1001 191.855C46.4801 191.275 45.7201 190.985 44.8101 190.985C43.9001 190.985 43.1101 191.275 42.4601 191.855C41.8301 192.435 41.4001 193.265 41.1701 194.335H41.1601Z"/>
+            <path class="lp" d="M298.32 204.355C296.37 204.355 294.65 203.895 293.15 202.985C291.67 202.055 290.52 200.765 289.7 199.105C288.87 197.455 288.46 195.525 288.46 193.335C288.46 191.145 288.87 189.235 289.7 187.585C290.53 185.915 291.68 184.625 293.15 183.715C294.65 182.785 296.37 182.315 298.32 182.315C299.9 182.315 301.32 182.615 302.56 183.215C303.81 183.815 304.84 184.665 305.64 185.775C306.45 186.885 306.95 188.175 307.14 189.645H303.08C302.91 188.515 302.39 187.605 301.52 186.905C300.66 186.205 299.59 185.855 298.3 185.855C297.1 185.855 296.06 186.175 295.16 186.805C294.26 187.415 293.57 188.295 293.08 189.415C292.61 190.525 292.37 191.835 292.37 193.345C292.37 194.855 292.61 196.175 293.08 197.295C293.57 198.415 294.27 199.285 295.16 199.905C296.06 200.525 297.1 200.825 298.3 200.825C299.58 200.825 300.65 200.485 301.52 199.795C302.38 199.095 302.9 198.165 303.08 197.025H307.14C306.95 198.505 306.45 199.795 305.64 200.905C304.83 202.015 303.8 202.865 302.56 203.465C301.31 204.065 299.9 204.365 298.32 204.365V204.355Z"/>
+            <path class="lp" d="M316.84 204.305C315.36 204.305 314.04 203.975 312.89 203.305C311.73 202.615 310.81 201.665 310.12 200.435C309.45 199.205 309.12 197.755 309.12 196.085C309.12 194.415 309.45 192.935 310.12 191.705C310.81 190.475 311.73 189.525 312.89 188.855C314.05 188.185 315.37 187.855 316.84 187.855C318.31 187.855 319.69 188.185 320.85 188.855C322.01 189.525 322.92 190.475 323.57 191.705C324.24 192.935 324.57 194.395 324.57 196.085C324.57 197.775 324.24 199.215 323.57 200.465C322.9 201.695 321.99 202.645 320.83 203.315C319.67 203.985 318.34 204.315 316.85 204.315L316.84 204.305ZM316.84 200.875C318.02 200.875 318.96 200.445 319.66 199.585C320.38 198.705 320.74 197.535 320.74 196.075C320.74 194.615 320.38 193.435 319.66 192.565C318.96 191.705 318.02 191.275 316.84 191.275C315.66 191.275 314.76 191.705 314.02 192.565C313.3 193.425 312.94 194.595 312.94 196.075C312.94 197.555 313.3 198.705 314.02 199.585C314.76 200.445 315.7 200.875 316.84 200.875Z"/>
+            <path class="lp" d="M327.91 203.985V188.165H331.58V190.565H331.68C332.1 189.665 332.7 189.005 333.47 188.565C334.24 188.105 335.14 187.875 336.16 187.875C337.18 187.875 338.09 188.115 338.9 188.585C339.71 189.055 340.35 189.745 340.82 190.645H340.9C341.44 189.745 342.14 189.065 342.98 188.585C343.84 188.115 344.8 187.875 345.85 187.875C347.05 187.875 348.09 188.145 348.99 188.695C349.89 189.235 350.58 190.005 351.07 190.985C351.58 191.955 351.83 193.085 351.83 194.385V203.985H348.01V195.105C348.01 193.925 347.73 193.015 347.17 192.365C346.63 191.695 345.87 191.365 344.9 191.365C343.93 191.365 343.19 191.695 342.63 192.365C342.07 193.015 341.79 193.925 341.79 195.105V203.985H337.97V195.105C337.97 193.925 337.69 193.015 337.13 192.365C336.57 191.695 335.79 191.365 334.81 191.365C333.83 191.365 333.09 191.695 332.54 192.365C332 193.015 331.72 193.925 331.72 195.105V203.985H327.9H327.91Z"/>
+            <path class="lp" d="M355.96 210.315V188.165H359.68V190.535H359.78C360.69 188.745 362.23 187.845 364.39 187.845C365.71 187.845 366.86 188.195 367.84 188.905C368.82 189.585 369.59 190.545 370.13 191.775C370.67 193.005 370.95 194.435 370.95 196.075C370.95 197.715 370.68 199.155 370.13 200.395C369.59 201.625 368.82 202.585 367.84 203.265C366.86 203.945 365.71 204.295 364.39 204.295C362.26 204.295 360.76 203.425 359.88 201.685H359.77V210.305H355.95L355.96 210.315ZM363.35 200.905C364.53 200.905 365.45 200.475 366.12 199.615C366.81 198.735 367.15 197.555 367.15 196.085C367.15 194.615 366.81 193.445 366.12 192.575C365.45 191.695 364.53 191.255 363.35 191.255C362.24 191.255 361.37 191.615 360.74 192.335C360.11 193.055 359.79 194.025 359.79 195.235V196.925C359.79 198.135 360.11 199.105 360.74 199.825C361.37 200.525 362.24 200.885 363.35 200.905Z"/>
+            <path class="lp" d="M378.61 204.275C377.01 204.275 375.72 203.825 374.73 202.925C373.76 202.025 373.28 200.855 373.28 199.395C373.28 197.935 373.79 196.685 374.81 195.835C375.85 194.995 377.3 194.565 379.16 194.565H383.22V193.875C383.22 192.965 382.96 192.245 382.43 191.745C381.92 191.235 381.21 190.985 380.29 190.985C379.52 190.985 378.87 191.155 378.37 191.515C377.86 191.865 377.53 192.375 377.37 193.045H373.49C373.79 191.395 374.54 190.115 375.73 189.225C376.93 188.315 378.45 187.855 380.29 187.855C382.36 187.855 383.97 188.395 385.12 189.465C386.28 190.535 386.86 192.045 386.86 194.005V203.995H383.3V201.625H383.2C382.78 202.465 382.16 203.125 381.35 203.605C380.56 204.065 379.65 204.295 378.61 204.295V204.275ZM379.43 201.245C380.15 201.245 380.79 201.085 381.35 200.775C381.93 200.455 382.39 200.025 382.72 199.485C383.05 198.925 383.22 198.285 383.22 197.585V197.245H379.34C378.57 197.245 377.96 197.425 377.52 197.775C377.1 198.125 376.89 198.605 376.89 199.225C376.89 199.845 377.12 200.355 377.57 200.725C378.03 201.075 378.64 201.255 379.42 201.255L379.43 201.245Z"/>
+            <path class="lp" d="M390.97 203.985V188.165H394.69V190.565H394.8C395.26 189.705 395.89 189.045 396.7 188.585C397.53 188.115 398.48 187.875 399.55 187.875C400.71 187.875 401.72 188.155 402.58 188.715C403.46 189.275 404.14 190.055 404.64 191.035C405.13 192.015 405.38 193.155 405.38 194.435V203.975H401.56V195.165C401.56 193.965 401.26 193.035 400.66 192.375C400.06 191.685 399.24 191.345 398.18 191.345C397.12 191.345 396.32 191.685 395.7 192.375C395.1 193.045 394.8 193.975 394.8 195.165V203.975H390.98L390.97 203.985Z"/>
+            <path class="lp" d="M408.9 210.315V207.255H412.35L413.54 204.035L407 188.165H410.95L415.46 199.375H415.56L419.38 188.165H423.25L416.13 207.225C415.74 208.245 415.3 209.005 414.79 209.515C414.28 210.045 413.5 210.305 412.44 210.305H408.88L408.9 210.315Z"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-footer">
+          <span class="variant-label">Symbol + Logo + Tagline</span>
+          <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 3: Symbol only — square 153×153 canvas, logo centered vertically -->
+      <div class="logo-card" data-variant="symbol" data-ratio="1.0">
+        <div class="preview-area">
+          <svg viewBox="0 0 300.4 300.4" width="90" xmlns="http://www.w3.org/2000/svg">
+
+            <g transform="translate(73.7,81.7)">
+            <path class="lp" d="M50.5,112.9l-3.7,4.7,8.4,13.2-.9,6.1h35.6l2.5-6.1-14.3-17.9h-27.6Z"/>
+            <path class="lp" d="M69.9,32.6l-12.9,22.7,62.9,74.8-1.8,6.9h28.8l5.2-24.3L84.9,32.5h-15Z"/>
+            <path class="lp" d="M78.5,15.5l-6.1,11.3h15.2l26.1,31.2,15.5-12.8v-8.1l-5.4-7.6,4-4.2L96.7.6l-18.2,14.9Z"/>
+            <path class="lp" d="M31.7,78.7h-8.5L.8,107.3v29.6h24l4.2-5.5,18.5-24.1h26.8l8.3-12.7-29.1-34.7-21.9,18.9Z"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-footer">
+          <span class="variant-label">Symbol Only</span>
+          <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 4: Logotype only (250×94) -->
+      <div class="logo-card" data-variant="logotype" data-ratio="2.6596">
+        <div class="preview-area">
+          <svg viewBox="0 0 397.4 241.4" width="190" xmlns="http://www.w3.org/2000/svg">
+
+            <g transform="translate(73.7,73.7)">
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M44.6984 0.199951H63.5984L36.3984 34.8L64.6984 73.8999H44.5984L22.9984 43.1999H17.8984V73.8999H0.898438V0.199951H17.8984V28.7999H22.9984L44.5984 0.199951H44.6984Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M85.4016 61.0001H106.302V28.8001H85.4016V61.0001ZM86.1016 73.9001C80.3016 73.9001 77.3016 72.9001 74.8016 70.3001C71.1016 66.5001 69.6016 61.3001 69.6016 45.0001C69.6016 28.7001 71.1016 23.5001 74.8016 19.6001C77.2016 17.1001 80.3016 16.1001 86.1016 16.1001H105.502C111.302 16.1001 114.302 17.1001 116.802 19.6001C120.502 23.5001 122.002 28.6001 122.002 45.0001C122.002 61.4001 120.502 66.5001 116.802 70.3001C114.302 72.9001 111.302 73.9001 105.502 73.9001H86.1016Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M169.298 34.3001V73.9001H185.198V33.1001C185.198 24.6001 184.298 21.6001 181.898 19.3001C179.698 17.1001 176.598 16.1001 171.698 16.1001H157.698L149.698 23.4001V16.1001H133.898V73.9001H149.798V28.8001H169.298V34.4001V34.3001Z"/>
+            <path class="lp" fill-rule="evenodd" clip-rule="evenodd" d="M234.001 16.1001V23.4001L226.001 16.1001H214.101C208.401 16.1001 205.001 17.1001 202.401 19.6001C199.001 23.2001 197.301 30.9001 197.301 45.2001C197.301 59.5001 198.701 66.9001 202.001 70.3001C204.601 72.8001 207.701 73.9001 213.801 73.9001H234.001V82.2001H206.001V85.6001L213.301 93.7001H235.201C241.001 93.7001 244.301 92.7001 246.401 90.5001C249.001 87.8001 250.001 86.1001 250.001 76.2001V16.2001H234.001V16.1001ZM234.101 61.0001H213.201V28.8001H234.101V61.0001Z"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-footer">
+          <span class="variant-label">Logotype Only</span>
+          <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+
+    </div><!-- /logo-grid -->
+
+    <!-- Controls Panel -->
+    <div class="panel">
+
+      <div>
+        <div class="section-title">Output Size (px)</div>
+        <div class="size-row">
+          <div class="inp-group">
+            <label class="inp-label" for="wInput">Width</label>
+            <input type="number" class="px-input" id="wInput" value="800" min="8" max="8000">
+          </div>
+          <div class="inp-group">
+            <label class="inp-label" for="hInput">Height</label>
+            <input type="number" class="px-input" id="hInput" value="214" min="8" max="8000">
+          </div>
+        </div>
+        <div class="lock-hint">
+          <div class="lock-dot"></div>
+          <span>Proportions locked · K clearspace included</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Background</div>
+        <div class="bg-toggle" id="bgToggle">
+          <span class="bg-opt active" data-bg="yes">With BG</span>
+          <span class="bg-opt" data-bg="no">No BG</span>
+        </div>
+        <div class="bg-note" id="bgNote"></div>
+      </div>
+
+      <div>
+        <div class="section-title">Download</div>
+        <div class="dl-list">
+          <button class="dl-btn" id="dlSVG">
+            <span>Vector</span>
+            <div class="dl-right">
+              <span class="dl-meta">Scalable</span>
+              <span class="dl-fmt">SVG</span>
+              <svg class="dl-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l-3-3m3 3l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </button>
+          <button class="dl-btn" id="dlPNG">
+            <span>Lossless</span>
+            <div class="dl-right">
+              <span class="dl-meta" id="pngMeta">With BG</span>
+              <span class="dl-fmt">PNG</span>
+              <svg class="dl-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l-3-3m3 3l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </button>
+          <button class="dl-btn" id="dlJPG">
+            <span>Compressed</span>
+            <div class="dl-right">
+              <span class="dl-meta" id="jpgMeta">With BG</span>
+              <span class="dl-fmt">JPG</span>
+              <svg class="dl-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l-3-3m3 3l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="section-title">Selected</div>
+        <div class="info-name" id="infoName">Symbol + Logotype</div>
+        <div class="info-dims" id="infoDims">800 × 214 px · Dark</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// K-height clearspace unit (measured from K glyph in source files)
+const K = 73.7;
+
+const VARIANTS = {
+  symbol_logotype:         { name: 'Symbol + Logotype',       vw: 429, vh: 137 },
+  symbol_logotype_tagline: { name: 'Symbol + Logo + Tagline', vw: 426, vh: 211 },
+  symbol:                  { name: 'Symbol Only',             vw: 153, vh: 137, square: true },
+  logotype:                { name: 'Logotype Only',           vw: 250, vh:  94 },
+};
+
+// Padded (with clearspace) dimensions used for export and aspect ratio
+// Symbol is square: use max(vw,vh) as the canvas side
+function pvw(v) { return (v.square ? Math.max(v.vw, v.vh) : v.vw) + K * 2; }
+function pvh(v) { return (v.square ? Math.max(v.vw, v.vh) : v.vh) + K * 2; }
+function pratio(v) { return pvw(v) / pvh(v); }
+
+// Translate offsets: center logo within the padded canvas
+function tx(v) { return K; }
+function ty(v) { return v.square ? K + (Math.max(v.vw, v.vh) - v.vh) / 2 : K; }
+
+let theme = 'dark';
+let variant = 'symbol_logotype';
+let ratio = pratio(VARIANTS['symbol_logotype']); // 576.4/284.4 ≈ 2.026
+let withBg = true;
+
+// Cache path data from the translate groups inside preview SVGs
+const PATH_CACHE = {};
+document.querySelectorAll('.logo-card').forEach(card => {
+  const v = card.dataset.variant;
+  const g = card.querySelector('svg g');
+  PATH_CACHE[v] = g.innerHTML.replace(/\sclass="lp"/g, '');
+});
+
+// Theme toggle
+document.getElementById('themeToggle').addEventListener('click', e => {
+  const opt = e.target.closest('.t-opt');
+  if (!opt || opt.dataset.t === theme) return;
+  theme = opt.dataset.t;
+  document.querySelectorAll('.t-opt').forEach(o => o.classList.toggle('active', o.dataset.t === theme));
+  document.body.className = theme === 'dark' ? '' : theme;
+  updateInfo();
+});
+
+// BG toggle
+document.getElementById('bgToggle').addEventListener('click', e => {
+  const opt = e.target.closest('.bg-opt');
+  if (!opt) return;
+  withBg = opt.dataset.bg === 'yes';
+  document.querySelectorAll('.bg-opt').forEach(o => o.classList.toggle('active', o.dataset.bg === (withBg ? 'yes' : 'no')));
+  updateInfo();
+});
+
+// Card selection
+document.getElementById('cardGrid').addEventListener('click', e => {
+  const card = e.target.closest('.logo-card');
+  if (!card) return;
+  document.querySelectorAll('.logo-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  variant = card.dataset.variant;
+  ratio = pratio(VARIANTS[variant]);
+  const w = parseInt(document.getElementById('wInput').value) || 800;
+  document.getElementById('hInput').value = Math.round(w / ratio);
+  updateInfo();
+});
+
+// Size inputs — proportional lock
+document.getElementById('wInput').addEventListener('input', () => {
+  const w = parseInt(document.getElementById('wInput').value) || 0;
+  if (w > 0) document.getElementById('hInput').value = Math.round(w / ratio);
+  updateInfo();
+});
+document.getElementById('hInput').addEventListener('input', () => {
+  const h = parseInt(document.getElementById('hInput').value) || 0;
+  if (h > 0) document.getElementById('wInput').value = Math.round(h * ratio);
+  updateInfo();
+});
+
+function updateInfo() {
+  const w = parseInt(document.getElementById('wInput').value) || 800;
+  const h = parseInt(document.getElementById('hInput').value) || 214;
+  const labels = { dark: 'Dark', electric: 'Electric', bay: 'Bay', bw: 'B/W' };
+  document.getElementById('infoName').textContent = VARIANTS[variant].name;
+  document.getElementById('infoDims').textContent = `${w} \u00d7 ${h} px \u00b7 ${labels[theme]}`;
+  document.getElementById('pngMeta').textContent = withBg ? 'With BG' : 'Transparent';
+  document.getElementById('jpgMeta').textContent = withBg ? 'With BG' : 'White BG';
+  document.getElementById('bgNote').textContent = !withBg ? 'JPG will use white BG (no alpha)' : '';
+}
+
+const THEME_COLORS = {
+  dark:     { fill: '#CCFF00', bg: '#001408' },
+  electric: { fill: '#001408', bg: '#CCFF00' },
+  bay:      { fill: '#001408', bg: '#A1A69F' },
+  bw:       { fill: '#001408', bg: '#FFFFFF' },
+};
+function colors() { return THEME_COLORS[theme]; }
+
+// Build export SVG: padded canvas + K clearspace, logo correctly offset
+function buildSVG(w, h) {
+  const v = VARIANTS[variant];
+  const { fill, bg } = colors();
+  const ew = pvw(v), eh = pvh(v);
+  const bgRect = withBg ? `<rect width="${ew}" height="${eh}" fill="${bg}"/>` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${ew} ${eh}">
+  ${bgRect}
+  <g fill="${fill}" transform="translate(${tx(v)},${ty(v)})">${PATH_CACHE[variant]}</g>
+</svg>`;
+}
+
+// SVG download
+document.getElementById('dlSVG').addEventListener('click', () => {
+  const w = parseInt(document.getElementById('wInput').value) || 800;
+  const h = parseInt(document.getElementById('hInput').value) || 214;
+  const bgSuffix = withBg ? 'bg' : 'nobg';
+  dl(URL.createObjectURL(new Blob([buildSVG(w, h)], { type: 'image/svg+xml' })),
+     `kong-${variant}-${theme}-${bgSuffix}-${w}x${h}.svg`);
+});
+
+// Raster download
+function rasterDownload(fmt) {
+  const w = parseInt(document.getElementById('wInput').value) || 800;
+  const h = parseInt(document.getElementById('hInput').value) || 214;
+  const { bg } = colors();
+  const canvas = document.getElementById('offscreen');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const url = URL.createObjectURL(new Blob([buildSVG(w, h)], { type: 'image/svg+xml;charset=utf-8' }));
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, w, h);
+    if (fmt === 'jpg') { ctx.fillStyle = withBg ? bg : '#FFFFFF'; ctx.fillRect(0, 0, w, h); }
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const bgSuffix = withBg ? 'bg' : 'nobg';
+    const mime = fmt === 'jpg' ? 'image/jpeg' : 'image/png';
+    canvas.toBlob(b => dl(URL.createObjectURL(b), `kong-${variant}-${theme}-${bgSuffix}-${w}x${h}.${fmt}`), mime, 0.95);
+  };
+  img.src = url;
+}
+
+document.getElementById('dlPNG').addEventListener('click', () => rasterDownload('png'));
+document.getElementById('dlJPG').addEventListener('click', () => rasterDownload('jpg'));
+
+function dl(href, name) {
+  const a = document.createElement('a');
+  a.href = href; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(href), 1500);
+}
+
+updateInfo();
+</script>
+</body>
+</html>
