@@ -697,6 +697,9 @@ function dl(href, name) {
   setTimeout(() => URL.revokeObjectURL(href), 1500);
 }
 
+// Init: set correct height from ratio on load
+const initW = parseInt(document.getElementById('wInput').value) || 800;
+document.getElementById('hInput').value = Math.round(initW / ratio);
 updateInfo();
 </script>
 </body>
