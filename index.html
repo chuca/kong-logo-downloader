@@ -56,6 +56,46 @@
     --logo-fill: #FFFFFF;
     --preview-bg: #000000;
   }
+  body.bw-inverted {
+    --bg: #E8E8E8;
+    --surface: #F5F5F5;
+    --surface-2: #EFEFEF;
+    --border: #D0D0D0;
+    --border-hover: #AAAAAA;
+    --text-primary: #111111;
+    --text-secondary: #666666;
+    --accent: #111111;
+    --logo-fill: #000000;
+    --preview-bg: #FFFFFF;
+  }
+
+  /* B/W invert toggle */
+  .bw-invert-row { display: none; }
+  body.bw .bw-invert-row,
+  body.bw-inverted .bw-invert-row { display: block; }
+  .bw-invert-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+    user-select: none;
+    transition: border-color 0.2s;
+  }
+  .bw-invert-toggle:hover { border-color: var(--border-hover); }
+  .bw-opt {
+    flex: 1;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 0;
+    text-align: center;
+    border-radius: 999px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .bw-opt.active { background: var(--accent); color: var(--bg); }
 
   body {
     font-family: 'Funnel Sans', system-ui, sans-serif;
@@ -429,6 +469,14 @@
         </div>
       </div>
 
+      <div class="bw-invert-row">
+        <div class="section-title">Invert</div>
+        <div class="bw-invert-toggle" id="bwInvertToggle">
+          <span class="bw-opt active" data-bwinvert="black">Black BG</span>
+          <span class="bw-opt" data-bwinvert="white">White BG</span>
+        </div>
+      </div>
+
       <div>
         <div class="section-title">Background</div>
         <div class="bg-toggle" id="bgToggle">
@@ -500,6 +548,7 @@ function tx(v) { return K; }
 function ty(v) { return v.square ? K + (Math.max(v.vw, v.vh) - v.vh) / 2 : K; }
 
 let theme = 'dark';
+let bwInverted = false;
 let variant = 'symbol_logotype';
 let ratio = pratio(VARIANTS['symbol_logotype']); // 576.4/284.4 ≈ 2.026
 let withBg = true;
@@ -517,8 +566,23 @@ document.getElementById('themeToggle').addEventListener('click', e => {
   const opt = e.target.closest('.t-opt');
   if (!opt || opt.dataset.t === theme) return;
   theme = opt.dataset.t;
+  // Reset bw invert when leaving bw theme
+  if (theme !== 'bw') {
+    bwInverted = false;
+    document.querySelectorAll('.bw-opt').forEach(o => o.classList.toggle('active', o.dataset.bwinvert === 'black'));
+  }
   document.querySelectorAll('.t-opt').forEach(o => o.classList.toggle('active', o.dataset.t === theme));
-  document.body.className = theme === 'dark' ? '' : theme;
+  document.body.className = theme === 'dark' ? '' : (theme === 'bw' && bwInverted ? 'bw-inverted' : theme);
+  updateInfo();
+});
+
+// B/W invert toggle
+document.getElementById('bwInvertToggle').addEventListener('click', e => {
+  const opt = e.target.closest('.bw-opt');
+  if (!opt) return;
+  bwInverted = opt.dataset.bwinvert === 'white';
+  document.querySelectorAll('.bw-opt').forEach(o => o.classList.toggle('active', o.dataset.bwinvert === (bwInverted ? 'white' : 'black')));
+  document.body.className = bwInverted ? 'bw-inverted' : 'bw';
   updateInfo();
 });
 
@@ -560,20 +624,26 @@ function updateInfo() {
   const w = parseInt(document.getElementById('wInput').value) || 800;
   const h = parseInt(document.getElementById('hInput').value) || 214;
   const labels = { dark: 'Dark', electric: 'Electric', bay: 'Bay', bw: 'B/W' };
+  const activeTheme = theme === 'bw' && bwInverted ? 'bw-inverted' : theme;
+  const themeLabel = activeTheme === 'bw-inverted' ? 'B/W Inverted' : labels[theme];
   document.getElementById('infoName').textContent = VARIANTS[variant].name;
-  document.getElementById('infoDims').textContent = `${w} \u00d7 ${h} px \u00b7 ${labels[theme]}`;
+  document.getElementById('infoDims').textContent = `${w} \u00d7 ${h} px \u00b7 ${themeLabel}`;
   document.getElementById('pngMeta').textContent = withBg ? 'With BG' : 'Transparent';
   document.getElementById('jpgMeta').textContent = withBg ? 'With BG' : 'White BG';
   document.getElementById('bgNote').textContent = !withBg ? 'JPG will use white BG (no alpha)' : '';
 }
 
 const THEME_COLORS = {
-  dark:     { fill: '#CCFF00', bg: '#001408' },
-  electric: { fill: '#001408', bg: '#CCFF00' },
-  bay:      { fill: '#CCFF00', bg: '#A1A69F' },
-  bw:       { fill: '#FFFFFF', bg: '#000000' },
+  dark:         { fill: '#CCFF00', bg: '#001408' },
+  electric:     { fill: '#001408', bg: '#CCFF00' },
+  bay:          { fill: '#CCFF00', bg: '#A1A69F' },
+  bw:           { fill: '#FFFFFF', bg: '#000000' },
+  'bw-inverted':{ fill: '#000000', bg: '#FFFFFF' },
 };
-function colors() { return THEME_COLORS[theme]; }
+function colors() {
+  const key = theme === 'bw' && bwInverted ? 'bw-inverted' : theme;
+  return THEME_COLORS[key];
+}
 
 // Build export SVG: padded canvas + K clearspace, logo correctly offset
 function buildSVG(w, h) {
