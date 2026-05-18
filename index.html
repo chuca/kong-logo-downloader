@@ -338,7 +338,7 @@
   <div class="main-grid">
     <div class="logo-grid" id="cardGrid">
 
-      <!-- 1: Symbol + Logotype (429×137) -->
+      <!-- 1: Emblem + Logotype (429×137) -->
       <div class="logo-card selected" data-variant="symbol_logotype" data-ratio="3.1314">
         <div class="preview-area">
           <svg viewBox="0 0 576.4 284.4" width="240" xmlns="http://www.w3.org/2000/svg">
@@ -356,12 +356,12 @@
           </svg>
         </div>
         <div class="card-footer">
-          <span class="variant-label">Symbol + Logotype</span>
+          <span class="variant-label">Emblem + Logotype</span>
           <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
       </div>
 
-      <!-- 2: Symbol + Logotype + Tagline (426×211) -->
+      <!-- 2: Emblem + Logotype + Tagline (426×211) -->
       <div class="logo-card" data-variant="symbol_logotype_tagline" data-ratio="2.0189">
         <div class="preview-area">
           <svg viewBox="0 0 573.4 358.4" width="200" xmlns="http://www.w3.org/2000/svg">
@@ -403,12 +403,12 @@
           </svg>
         </div>
         <div class="card-footer">
-          <span class="variant-label">Symbol + Logo + Tagline</span>
+          <span class="variant-label">Emblem + Logo + Tagline</span>
           <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
       </div>
 
-      <!-- 3: Symbol only — square 153×153 canvas, logo centered vertically -->
+      <!-- 3: Emblem only — square 153×153 canvas, logo centered vertically -->
       <div class="logo-card" data-variant="symbol" data-ratio="1.0">
         <div class="preview-area">
           <svg viewBox="0 0 300.4 300.4" width="90" xmlns="http://www.w3.org/2000/svg">
@@ -422,7 +422,7 @@
           </svg>
         </div>
         <div class="card-footer">
-          <span class="variant-label">Symbol Only</span>
+          <span class="variant-label">Emblem Only</span>
           <div class="check-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1 4.5l2.5 2.5 4.5-4.5" stroke="#001408" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
       </div>
@@ -518,7 +518,7 @@
 
       <div class="info-block">
         <div class="section-title">Selected</div>
-        <div class="info-name" id="infoName">Symbol + Logotype</div>
+        <div class="info-name" id="infoName">Emblem + Logotype</div>
         <div class="info-dims" id="infoDims">800 × 214 px · Dark</div>
       </div>
     </div>
@@ -531,14 +531,14 @@
 const K = 73.7;
 
 const VARIANTS = {
-  symbol_logotype:         { name: 'Symbol + Logotype',       vw: 429, vh: 137 },
-  symbol_logotype_tagline: { name: 'Symbol + Logo + Tagline', vw: 426, vh: 211 },
-  symbol:                  { name: 'Symbol Only',             vw: 153, vh: 137, square: true },
+  symbol_logotype:         { name: 'Emblem + Logotype',       vw: 429, vh: 137 },
+  symbol_logotype_tagline: { name: 'Emblem + Logo + Tagline', vw: 426, vh: 211 },
+  symbol:                  { name: 'Emblem Only',             vw: 153, vh: 137, square: true },
   logotype:                { name: 'Logotype Only',           vw: 250, vh:  94 },
 };
 
 // Padded (with clearspace) dimensions used for export and aspect ratio
-// Symbol is square: use max(vw,vh) as the canvas side
+// Emblem is square: use max(vw,vh) as the canvas side
 function pvw(v) { return (v.square ? Math.max(v.vw, v.vh) : v.vw) + K * 2; }
 function pvh(v) { return (v.square ? Math.max(v.vw, v.vh) : v.vh) + K * 2; }
 function pratio(v) { return pvw(v) / pvh(v); }
